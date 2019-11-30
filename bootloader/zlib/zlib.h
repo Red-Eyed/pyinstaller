@@ -32,6 +32,8 @@
 #define ZLIB_H
 
 #include "zconf.h"
+#include <inttypes.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,19 +80,19 @@ extern "C" {
   even in the case of corrupted input.
 */
 
-typedef voidpf (*alloc_func) OF((voidpf opaque, uInt items, uInt size));
+typedef voidpf (*alloc_func) OF((voidpf opaque, uint64_t items, uint64_t size));
 typedef void   (*free_func)  OF((voidpf opaque, voidpf address));
 
 struct internal_state;
 
 typedef struct z_stream_s {
     z_const Bytef *next_in;     /* next input byte */
-    uInt     avail_in;  /* number of bytes available at next_in */
-    uLong    total_in;  /* total number of input bytes read so far */
+    uint64_t     avail_in;  /* number of bytes available at next_in */
+    uint64_t     total_in;  /* total number of input bytes read so far */
 
-    Bytef    *next_out; /* next output byte will go here */
-    uInt     avail_out; /* remaining free space at next_out */
-    uLong    total_out; /* total number of bytes output so far */
+    Bytef      *next_out; /* next output byte will go here */
+    uint64_t     avail_out; /* remaining free space at next_out */
+    uint64_t     total_out; /* total number of bytes output so far */
 
     z_const char *msg;  /* last error message, NULL if no error */
     struct internal_state FAR *state; /* not visible by applications */
@@ -99,10 +101,10 @@ typedef struct z_stream_s {
     free_func  zfree;   /* used to free the internal state */
     voidpf     opaque;  /* private data object passed to zalloc and zfree */
 
-    int     data_type;  /* best guess about the data type: binary or text
+    int      data_type;  /* best guess about the data type: binary or text
                            for deflate, or the decoding state for inflate */
-    uLong   adler;      /* Adler-32 or CRC-32 value of the uncompressed data */
-    uLong   reserved;   /* reserved for future use */
+    uint64_t   adler;      /* Adler-32 or CRC-32 value of the uncompressed data */
+    uint64_t    reserved;   /* reserved for future use */
 } z_stream;
 
 typedef z_stream FAR *z_streamp;
@@ -1890,7 +1892,7 @@ ZEXTERN int            ZEXPORT inflateSyncPoint OF((z_streamp));
 ZEXTERN const z_crc_t FAR * ZEXPORT get_crc_table    OF((void));
 ZEXTERN int            ZEXPORT inflateUndermine OF((z_streamp, int));
 ZEXTERN int            ZEXPORT inflateValidate OF((z_streamp, int));
-ZEXTERN unsigned long  ZEXPORT inflateCodesUsed OF ((z_streamp));
+ZEXTERN unsigned long long  ZEXPORT inflateCodesUsed OF ((z_streamp));
 ZEXTERN int            ZEXPORT inflateResetKeep OF((z_streamp));
 ZEXTERN int            ZEXPORT deflateResetKeep OF((z_streamp));
 #if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(Z_SOLO)

@@ -21,14 +21,14 @@ files into the executable.
 # See pyi_carchive.py for a more general archive (contains anything)
 # that can be understood by a C program.
 
-import os
-import sys
-import struct
-from types import CodeType
 import marshal
+import os
+import struct
+import sys
 import zlib
+from types import CodeType
 
-from PyInstaller.building.utils import get_code_object, strip_paths_in_code,\
+from PyInstaller.building.utils import get_code_object, strip_paths_in_code, \
     fake_pyc_timestamp
 from PyInstaller.loader.pyimod02_archive import PYZ_TYPE_MODULE, PYZ_TYPE_PKG, \
     PYZ_TYPE_DATA
@@ -232,7 +232,7 @@ class CTOC(object):
 
     When written to disk, it is easily read from C.
     """
-    ENTRYSTRUCT = '!iiiiBB'  # (structlen, dpos, dlen, ulen, flag, typcd) followed by name
+    ENTRYSTRUCT = '!QQQQBB'  # (structlen, dpos, dlen, ulen, flag, typcd) followed by name
     ENTRYLEN = struct.calcsize(ENTRYSTRUCT)
 
     def __init__(self):
@@ -261,7 +261,7 @@ class CTOC(object):
                 padlen = 16 - (toclen % 16)
                 pad = b'\0' * padlen
                 nmlen = nmlen + padlen
-            rslt.append(struct.pack(self.ENTRYSTRUCT + '%is' % nmlen,
+            rslt.append(struct.pack(f"{self.ENTRYSTRUCT}{nmlen}s",
                                     nmlen + self.ENTRYLEN, dpos, dlen, ulen,
                                     flag, ord(typcd), nm + pad))
 
@@ -309,14 +309,14 @@ class CArchiveWriter(ArchiveWriter):
     #
     #   typedef struct _cookie {
     #       char magic[8]; /* 'MEI\014\013\012\013\016' */
-    #       int  len;      /* len of entire package */
-    #       int  TOC;      /* pos (rel to start) of TableOfContents */
-    #       int  TOClen;   /* length of TableOfContents */
-    #       int  pyvers;   /* new in v4 */
+    #       uit64_t  len;      /* len of entire package */
+    #       uit64_t  TOC;      /* pos (rel to start) of TableOfContents */
+    #       uit64_t  TOClen;   /* length of TableOfContents */
+    #       uit64_t  pyvers;   /* new in v4 */
     #       char pylibname[64];    /* Filename of Python dynamic library. */
     #   } COOKIE;
     #
-    _cookie_format = '!8siiii64s'
+    _cookie_format = '!8sQQQQ64s'
     _cookie_size = struct.calcsize(_cookie_format)
 
     def __init__(self, archive_path, logical_toc, pylib_name):

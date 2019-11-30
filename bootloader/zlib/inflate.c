@@ -507,7 +507,7 @@ unsigned copy;
     do { \
         if (have == 0) goto inf_leave; \
         have--; \
-        hold += (unsigned long)(*next++) << bits; \
+        hold += (unsigned long long)(*next++) << bits; \
         bits += 8; \
     } while (0)
 
@@ -627,7 +627,7 @@ int flush;
     z_const unsigned char FAR *next;    /* next input */
     unsigned char FAR *put;     /* next output */
     unsigned have, left;        /* available input and output */
-    unsigned long hold;         /* bit buffer */
+    unsigned long long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     unsigned in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
@@ -1317,7 +1317,7 @@ const Bytef *dictionary;
 uInt dictLength;
 {
     struct inflate_state FAR *state;
-    unsigned long dictid;
+    unsigned long long dictid;
     int ret;
 
     /* check state */
@@ -1401,7 +1401,7 @@ int ZEXPORT inflateSync(strm)
 z_streamp strm;
 {
     unsigned len;               /* number of bytes to look at or looked at */
-    unsigned long in, out;      /* temporary to save total_in and total_out */
+    unsigned long long in, out;      /* temporary to save total_in and total_out */
     unsigned char buf[4];       /* to restore bit buffer to byte string */
     struct inflate_state FAR *state;
 
@@ -1546,16 +1546,16 @@ z_streamp strm;
     if (inflateStateCheck(strm))
         return -(1L << 16);
     state = (struct inflate_state FAR *)strm->state;
-    return (long)(((unsigned long)((long)state->back)) << 16) +
+    return (long)(((unsigned long long)((long)state->back)) << 16) +
         (state->mode == COPY ? state->length :
             (state->mode == MATCH ? state->was - state->length : 0));
 }
 
-unsigned long ZEXPORT inflateCodesUsed(strm)
+unsigned long long ZEXPORT inflateCodesUsed(strm)
 z_streamp strm;
 {
     struct inflate_state FAR *state;
-    if (inflateStateCheck(strm)) return (unsigned long)-1;
+    if (inflateStateCheck(strm)) return (unsigned long long)-1;
     state = (struct inflate_state FAR *)strm->state;
-    return (unsigned long)(state->next - state->codes);
+    return (unsigned long long)(state->next - state->codes);
 }

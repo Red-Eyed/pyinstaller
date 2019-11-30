@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ****************************************************************************
  * Copyright (c) 2013-2019, PyInstaller Development Team.
  * Distributed under the terms of the GNU General Public License with exception
@@ -52,7 +52,7 @@ int pyvers = 0;
 TOC *
 pyi_arch_increment_toc_ptr(const ARCHIVE_STATUS *status, const TOC* ptoc)
 {
-    TOC *result = (TOC*)((char *)ptoc + ntohl(ptoc->structlen));
+    TOC *result = (TOC*)((char *)ptoc + htonll(ptoc->structlen));
 
     if (result < status->tocbuff) {
         FATALERROR("Cannot read Table of Contents.\n");
@@ -103,7 +103,7 @@ decompress(unsigned char * buff, TOC *ptoc)
     int rc;
 
     ver = (zlibVersion)();
-    out = (unsigned char *)malloc(ntohl(ptoc->ulen));
+    out = (unsigned char *)malloc(htonll(ptoc->ulen));
 
     if (out == NULL) {
         OTHERERROR("Error allocating decompression buffer\n");
@@ -114,9 +114,9 @@ decompress(unsigned char * buff, TOC *ptoc)
     zstream.zfree = NULL;
     zstream.opaque = NULL;
     zstream.next_in = buff;
-    zstream.avail_in = ntohl(ptoc->len);
+    zstream.avail_in = htonll(ptoc->len);
     zstream.next_out = out;
-    zstream.avail_out = ntohl(ptoc->ulen);
+    zstream.avail_out = htonll(ptoc->ulen);
     rc = inflateInit(&zstream);
 
     if (rc >= 0) {
@@ -153,15 +153,15 @@ pyi_arch_extract(ARCHIVE_STATUS *status, TOC *ptoc)
         return NULL;
     }
 
-    fseek(status->fp, status->pkgstart + ntohl(ptoc->pos), SEEK_SET);
-    data = (unsigned char *)malloc(ntohl(ptoc->len));
+    fseek(status->fp, status->pkgstart + htonll(ptoc->pos), SEEK_SET);
+    data = (unsigned char *)malloc(htonll(ptoc->len));
 
     if (data == NULL) {
         OTHERERROR("Could not allocate read buffer\n");
         return NULL;
     }
 
-    if (fread(data, ntohl(ptoc->len), 1, status->fp) < 1) {
+    if (fread(data, htonll(ptoc->len), 1, status->fp) < 1) {
         OTHERERROR("Could not read from file\n");
         free(data);
         return NULL;
@@ -199,7 +199,7 @@ pyi_arch_extract2fs(ARCHIVE_STATUS *status, TOC *ptoc)
     }
 
     out = pyi_open_target(status->temppath, ptoc->name);
-    len = ntohl(ptoc->ulen);
+    len = htonll(ptoc->ulen);
 
     if (out == NULL) {
         FATAL_PERROR("fopen", "%s could not be extracted!\n", ptoc->name);
@@ -245,10 +245,11 @@ pyi_arch_extract2fs(ARCHIVE_STATUS *status, TOC *ptoc)
 #define SEARCH_SIZE (4096 + sizeof(COOKIE))
 #endif
 
+
 static int
-pyi_arch_find_cookie(ARCHIVE_STATUS *status, int search_end)
+pyi_arch_find_cookie(ARCHIVE_STATUS *status, uint64_t search_end)
 {
-    int search_start = search_end - SEARCH_SIZE;
+    uint64_t search_start = search_end - SEARCH_SIZE;
     char buf[SEARCH_SIZE];
     char * search_ptr = buf + SEARCH_SIZE - sizeof(COOKIE);
 
@@ -269,7 +270,7 @@ pyi_arch_find_cookie(ARCHIVE_STATUS *status, int search_end)
             memcpy(&status->cookie, search_ptr, sizeof(COOKIE));
 
             /* From the cookie, calculate the archive start */
-            status->pkgstart = search_start + sizeof(COOKIE) + (search_ptr - buf) - ntohl(status->cookie.len);
+            status->pkgstart = search_start + sizeof(COOKIE) + (search_ptr - buf) - htonll(status->cookie.len);
 
             return 0;
         }
@@ -384,7 +385,7 @@ findDigitalSignature(ARCHIVE_STATUS * const status)
 int
 pyi_arch_open(ARCHIVE_STATUS *status)
 {
-    int search_end = 0;
+    uint64_t search_end = 0;
     VS("LOADER: archivename is %s\n", status->archivename);
 
     /* Physically open the file */
@@ -421,19 +422,19 @@ pyi_arch_open(ARCHIVE_STATUS *status)
     pyvers = pyi_arch_get_pyversion(status);
 
     /* Read in in the table of contents */
-    fseek(status->fp, status->pkgstart + ntohl(status->cookie.TOC), SEEK_SET);
-    status->tocbuff = (TOC *) malloc(ntohl(status->cookie.TOClen));
+    fseek(status->fp, status->pkgstart + htonll(status->cookie.TOC), SEEK_SET);
+    status->tocbuff = (TOC *) malloc(htonll(status->cookie.TOClen));
 
     if (status->tocbuff == NULL) {
         FATAL_PERROR("malloc", "Could not allocate buffer for TOC.");
         return -1;
     }
 
-    if (fread(status->tocbuff, ntohl(status->cookie.TOClen), 1, status->fp) < 1) {
+    if (fread(status->tocbuff, htonll(status->cookie.TOClen), 1, status->fp) < 1) {
         FATAL_PERROR("fread", "Could not read from file.");
         return -1;
     }
-    status->tocend = (TOC *) (((char *)status->tocbuff) + ntohl(status->cookie.TOClen));
+    status->tocend = (TOC *) (((char *)status->tocbuff) + htonll(status->cookie.TOClen));
 
     /* Check input file is still ok (should be). */
     if (ferror(status->fp)) {
@@ -513,7 +514,7 @@ getFirstTocEntry(ARCHIVE_STATUS *status)
 TOC *
 getNextTocEntry(ARCHIVE_STATUS *status, TOC *entry)
 {
-    TOC *rslt = (TOC*)((char *)entry + ntohl(entry->structlen));
+    TOC *rslt = (TOC*)((char *)entry + htonll(entry->structlen));
 
     if (rslt >= status->tocend) {
         return NULL;
@@ -527,7 +528,7 @@ getNextTocEntry(ARCHIVE_STATUS *status, TOC *entry)
 int
 pyi_arch_get_pyversion(ARCHIVE_STATUS *status)
 {
-    return ntohl(status->cookie.pyvers);
+    return htonll(status->cookie.pyvers);
 }
 
 /*

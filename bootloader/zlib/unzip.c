@@ -146,8 +146,8 @@ typedef struct
                                         file if we are decompressing it */
     int encrypted;
 #    ifndef NOUNCRYPT
-    unsigned long keys[3];     /* keys defining the pseudo-random sequence */
-    const unsigned long* pcrc_32_tab;
+    unsigned long long keys[3];     /* keys defining the pseudo-random sequence */
+    const unsigned long long* pcrc_32_tab;
 #    endif
 } unz_s;
 
@@ -1167,7 +1167,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (file, method, level, raw, password)
     if (password != NULL)
     {
         int i;
-        s->pcrc_32_tab = (unsigned long*) get_crc_table();
+        s->pcrc_32_tab = (unsigned long long*) get_crc_table();
         init_keys(password,s->keys,s->pcrc_32_tab);
         if (ZSEEK(s->z_filefunc, s->filestream,
                   s->pfile_in_zip_read->pos_in_zipfile +

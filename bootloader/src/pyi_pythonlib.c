@@ -635,19 +635,19 @@ pyi_pylib_import_modules(ARCHIVE_STATUS *status)
              * data form the right point.
              */
             if (is_py2) {
-                co = PI_PyObject_CallFunction(loadfunc, "s#", modbuf + 8, ntohl(
+                co = PI_PyObject_CallFunction(loadfunc, "s#", modbuf + 8, htonll(
                                                   ptoc->ulen) - 8);
             }
             else if (pyvers >= 37) {
                 /* Python >= 3.7 the header: size was changed to 16 bytes. */
                 co = PI_PyObject_CallFunction(loadfunc, "y#", modbuf + 16,
-                                              ntohl(ptoc->ulen) - 16);
+                                              htonll(ptoc->ulen) - 16);
             }
             else {
                 /* It looks like from python 3.3 the header */
                 /* size was changed to 12 bytes. */
                 co =
-                    PI_PyObject_CallFunction(loadfunc, "y#", modbuf + 12, ntohl(
+                    PI_PyObject_CallFunction(loadfunc, "y#", modbuf + 12, htonll(
                                                  ptoc->ulen) - 12);
             };
 
@@ -695,7 +695,7 @@ int
 pyi_pylib_install_zlib(ARCHIVE_STATUS *status, TOC *ptoc)
 {
     int rc = 0;
-    int zlibpos = status->pkgstart + ntohl(ptoc->pos);
+    int zlibpos = status->pkgstart + htonll(ptoc->pos);
     PyObject * sys_path, *zlib_entry, *archivename_obj;
     char *archivename;
 

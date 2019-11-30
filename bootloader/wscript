@@ -615,6 +615,8 @@ def configure(ctx):
             # Use Unicode entry point wmain/wWinMain
             ctx.env.append_value('LINKFLAGS', '-municode')
 
+    ctx.env.append_value('CFLAGS', '-D_FILE_OFFSET_BITS=64')
+
     if ctx.env.DEST_OS == 'darwin':
         ctx.env.append_value('CFLAGS', '-mmacosx-version-min=10.7')
         ctx.env.append_value('LINKFLAGS', '-mmacosx-version-min=10.7')
@@ -700,15 +702,15 @@ def build(ctx):
     if machine():
         install_path += '-' + machine()
 
-    if not ctx.env.LIB_Z:
-        # If the operating system does not provide zlib, build our own. The
-        # configure phase defines whether or not zlib is mandatory for a
-        # platform.
-        ctx.stlib(
-            source=ctx.path.ant_glob('zlib/*.c'),
-            target='static_zlib',
-            name='Z',
-            includes='zlib')
+    # if not ctx.env.LIB_Z:
+    #     # If the operating system does not provide zlib, build our own. The
+    #     # configure phase defines whether or not zlib is mandatory for a
+    #     # platform.
+    ctx.stlib(
+        source=ctx.path.ant_glob('zlib/*.c'),
+        target='static_zlib',
+        name='Z',
+        includes='zlib')
 
     # By default strip final executables to make them smaller.
     features = 'strip'

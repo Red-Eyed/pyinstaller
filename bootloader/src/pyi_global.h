@@ -15,6 +15,11 @@
 #ifndef PYI_GLOBAL_H
 #define PYI_GLOBAL_H
 
+#include <inttypes.h>
+#include <stdio.h>
+
+
+uint64_t htonll(uint64_t src);
 /*
  * Detect memory leaks.
  *

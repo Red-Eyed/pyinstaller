@@ -751,7 +751,7 @@ pyi_utils_create_child(const char *thisfile, const ARCHIVE_STATUS* status,
             )) {
         VS("LOADER: Waiting for child process to finish...\n");
         WaitForSingleObject(pi.hProcess, INFINITE);
-        GetExitCodeProcess(pi.hProcess, (unsigned long *)&rc);
+        GetExitCodeProcess(pi.hProcess, (unsigned long long *)&rc);
     }
     else {
         FATAL_WINERROR("CreateProcessW", "Error creating child process!\n");
@@ -868,9 +868,9 @@ set_systemd_env()
          * The idea is from an answer on stackoverflow,
          * https://stackoverflow.com/questions/8257714/
          */
-        #define ULONG_STRING_SIZE (sizeof (unsigned long) * CHAR_BIT / 3 + 2)
+        #define ULONG_STRING_SIZE (sizeof (unsigned long long) * CHAR_BIT / 3 + 2)
         char pid_str[ULONG_STRING_SIZE];
-        snprintf(pid_str, ULONG_STRING_SIZE, "%ld", (unsigned long)getpid());
+        snprintf(pid_str, ULONG_STRING_SIZE, "%ld", (unsigned long long)getpid());
         return pyi_setenv(env_var, pid_str);
     }
     return 0;
